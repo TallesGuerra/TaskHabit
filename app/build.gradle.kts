@@ -49,6 +49,10 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    // Extended Icons + Google Fonts
+    implementation(libs.material.icons.extended)
+    implementation(libs.ui.text.google.fonts)
+
     // Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
