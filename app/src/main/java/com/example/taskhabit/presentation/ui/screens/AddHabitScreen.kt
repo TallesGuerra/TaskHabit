@@ -22,21 +22,38 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.taskhabit.data.local.entity.Habit
+import com.example.taskhabit.presentation.viewmodel.CategoryViewModel
+import com.example.taskhabit.presentation.viewmodel.HabitViewModel
 import com.example.taskhabit.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddHabitScreen(onBack: () -> Unit = {}) {
+fun AddHabitScreen(
+    onBack: () -> Unit = {},
+    habitViewModel: HabitViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel = hiltViewModel()
+) {
     var habitName by remember { mutableStateOf("") }
     var isDaily by remember { mutableStateOf(true) }
+
+    val categories by categoryViewModel.allCategories.collectAsStateWithLifecycle()
+    var selectedCategoryId by remember { mutableIntStateOf(0) }
+
+    // Set default category once list loads
+    LaunchedEffect(categories) {
+        if (selectedCategoryId == 0 && categories.isNotEmpty()) {
+            selectedCategoryId = categories.first().id
+        }
+    }
 
     Scaffold(
         containerColor = Background,
         topBar = {
             TopAppBar(
-                title = {
-                    Text(text = "Add New Habit", color = OnSurface, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
-                },
+                title = { Text(text = "Add New Habit", color = OnSurface, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Primary)
@@ -70,13 +87,9 @@ fun AddHabitScreen(onBack: () -> Unit = {}) {
                     .fillMaxWidth()
                     .height(192.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        Brush.linearGradient(listOf(Primary.copy(alpha = 0.4f), Secondary.copy(alpha = 0.2f)))
-                    )
+                    .background(Brush.linearGradient(listOf(Primary.copy(alpha = 0.4f), Secondary.copy(alpha = 0.2f))))
             ) {
-                Column(
-                    modifier = Modifier.align(Alignment.BottomStart).padding(24.dp)
-                ) {
+                Column(modifier = Modifier.align(Alignment.BottomStart).padding(24.dp)) {
                     Text(text = "NEW RITUAL", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                     Text(text = "Start Your Flow", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
                 }
@@ -94,9 +107,7 @@ fun AddHabitScreen(onBack: () -> Unit = {}) {
                     TextField(
                         value = habitName,
                         onValueChange = { habitName = it },
-                        placeholder = {
-                            Text(text = "e.g. Morning Meditation", color = Outline.copy(alpha = 0.5f), fontSize = 18.sp)
-                        },
+                        placeholder = { Text(text = "e.g. Morning Meditation", color = Outline.copy(alpha = 0.5f), fontSize = 18.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -114,24 +125,12 @@ fun AddHabitScreen(onBack: () -> Unit = {}) {
             // Frequency
             FormSection(label = "Frequency") {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FrequencyButton(
-                        label = "Daily",
-                        icon = Icons.Default.CalendarToday,
-                        isSelected = isDaily,
-                        onClick = { isDaily = true },
-                        modifier = Modifier.weight(1f)
-                    )
-                    FrequencyButton(
-                        label = "Weekly",
-                        icon = Icons.Default.DateRange,
-                        isSelected = !isDaily,
-                        onClick = { isDaily = false },
-                        modifier = Modifier.weight(1f)
-                    )
+                    FrequencyButton(label = "Daily", icon = Icons.Default.CalendarToday, isSelected = isDaily, onClick = { isDaily = true }, modifier = Modifier.weight(1f))
+                    FrequencyButton(label = "Weekly", icon = Icons.Default.DateRange, isSelected = !isDaily, onClick = { isDaily = false }, modifier = Modifier.weight(1f))
                 }
             }
 
-            // Reminder Time + Icon row
+            // Reminder Time + Category row
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 FormSection(label = "Reminder Time", modifier = Modifier.weight(1f)) {
                     Row(
@@ -148,29 +147,12 @@ fun AddHabitScreen(onBack: () -> Unit = {}) {
                         Icon(imageVector = Icons.Default.Schedule, contentDescription = null, tint = Primary)
                     }
                 }
-                FormSection(label = "Icon", modifier = Modifier.weight(1f)) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(SurfaceContainerLow)
-                            .border(1.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
-                            .clickable { }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Box(
-                                modifier = Modifier.size(32.dp).clip(CircleShape).background(Primary.copy(alpha = 0.2f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(imageVector = Icons.Default.SelfImprovement, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
-                            }
-                            Text(text = "Wellness", color = OnSurface, fontWeight = FontWeight.SemiBold)
-                        }
-                        Icon(imageVector = Icons.Default.ExpandMore, contentDescription = null, tint = Outline)
-                    }
+                FormSection(label = "Category", modifier = Modifier.weight(1f)) {
+                    CategoryPicker(
+                        categories = categories,
+                        selectedId = selectedCategoryId,
+                        onSelect = { selectedCategoryId = it }
+                    )
                 }
             }
 
@@ -231,10 +213,18 @@ fun AddHabitScreen(onBack: () -> Unit = {}) {
 
             // Create Button
             Button(
-                onClick = { /* TODO: wire to HabitViewModel.insertHabit() */ },
+                onClick = {
+                    if (habitName.isNotBlank() && selectedCategoryId != 0) {
+                        habitViewModel.insertHabit(
+                            Habit(name = habitName.trim(), categoryId = selectedCategoryId)
+                        )
+                        onBack()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth().height(64.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                enabled = habitName.isNotBlank() && selectedCategoryId != 0
             ) {
                 Text(text = "Create Habit", color = OnPrimary, fontSize = 18.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -247,16 +237,54 @@ fun AddHabitScreen(onBack: () -> Unit = {}) {
 }
 
 @Composable
+private fun CategoryPicker(
+    categories: List<com.example.taskhabit.data.local.entity.Category>,
+    selectedId: Int,
+    onSelect: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selected = categories.find { it.id == selectedId }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(SurfaceContainerLow)
+            .border(1.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
+            .clickable { expanded = true }
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = selected?.name ?: "Select",
+                color = if (selected != null) OnSurface else Outline,
+                fontWeight = FontWeight.SemiBold
+            )
+            Icon(imageVector = Icons.Default.ExpandMore, contentDescription = null, tint = Outline)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(SurfaceContainer)
+        ) {
+            categories.forEach { category ->
+                DropdownMenuItem(
+                    text = { Text(text = category.name, color = OnSurface, fontWeight = FontWeight.Medium) },
+                    onClick = { onSelect(category.id); expanded = false }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun FormSection(label: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = label.uppercase(),
-            color = OnSurfaceVariant,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp,
-            modifier = Modifier.padding(start = 4.dp)
-        )
+        Text(text = label.uppercase(), color = OnSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, modifier = Modifier.padding(start = 4.dp))
         content()
     }
 }
