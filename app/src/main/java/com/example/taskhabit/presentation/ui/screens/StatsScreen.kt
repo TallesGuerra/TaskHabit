@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,16 +22,24 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.taskhabit.presentation.ui.components.HabitBottomNavBar
 import com.example.taskhabit.presentation.ui.components.KineticTopAppBar
+import com.example.taskhabit.presentation.viewmodel.HabitViewModel
 import com.example.taskhabit.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
     currentRoute: String = "stats",
-    onNavigate: (String) -> Unit = {}
+    onNavigate: (String) -> Unit = {},
+    viewModel: HabitViewModel = hiltViewModel()
 ) {
+    val habits by viewModel.allHabits.collectAsStateWithLifecycle()
+    val totalCompleted = habits.count { it.isCompleted }
+    val totalHabits = habits.size
+
     Scaffold(
         containerColor = Background,
         topBar = { KineticTopAppBar() },
@@ -46,7 +54,7 @@ fun StatsScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                HeroStatsBento()
+                HeroStatsBento(totalCompleted = totalCompleted, totalHabits = totalHabits)
             }
             item { WeeklyRitualsSection() }
             item { HeatmapSection() }
@@ -59,7 +67,7 @@ fun StatsScreen(
 }
 
 @Composable
-private fun HeroStatsBento() {
+private fun HeroStatsBento(totalCompleted: Int, totalHabits: Int) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -93,7 +101,7 @@ private fun HeroStatsBento() {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "1,284",
+                    text = "$totalCompleted",
                     color = OnPrimary,
                     fontSize = 56.sp,
                     fontWeight = FontWeight.ExtraBold,

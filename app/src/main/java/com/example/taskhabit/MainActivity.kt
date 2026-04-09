@@ -17,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.taskhabit.presentation.ui.screens.AddHabitScreen
 import com.example.taskhabit.presentation.ui.screens.BadgesScreen
+import com.example.taskhabit.presentation.ui.screens.HabitsScreen
 import com.example.taskhabit.presentation.ui.screens.StatsScreen
 import com.example.taskhabit.presentation.ui.screens.TodayScreen
 import com.example.taskhabit.ui.theme.TaskHabitTheme
@@ -30,11 +31,18 @@ class MainActivity : ComponentActivity() {
             TaskHabitTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController,
-                        startDestination = "Today"
+                        startDestination = "today"
                     ) {
                     composable("today") {
                         TodayScreen(
                             currentRoute = "today",
+                            onNavigate = { route -> navController.navigate(route) },
+                            onAddHabit = { navController.navigate("add_habit") }
+                        )
+                    }
+                    composable("habits") {
+                        HabitsScreen(
+                            currentRoute = "habits",
                             onNavigate = { route -> navController.navigate(route) },
                             onAddHabit = { navController.navigate("add_habit") }
                         )
@@ -53,7 +61,7 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("add_habit") {
                         AddHabitScreen(
-                            onBack = { navController.popBackStack() } //volta para a tela anterior
+                            onBack = { navController.popBackStack() }
                         )
                     }
                 }

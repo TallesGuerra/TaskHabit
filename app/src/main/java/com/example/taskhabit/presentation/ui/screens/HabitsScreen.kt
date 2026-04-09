@@ -21,79 +21,51 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.taskhabit.data.local.entity.Habit
 import com.example.taskhabit.presentation.ui.components.HabitBottomNavBar
 import com.example.taskhabit.presentation.ui.components.KineticTopAppBar
+import com.example.taskhabit.presentation.ui.util.habitIconFor
+import com.example.taskhabit.presentation.viewmodel.CategoryViewModel
+import com.example.taskhabit.presentation.viewmodel.HabitViewModel
 import com.example.taskhabit.ui.theme.*
 
-// ---------------------------------------------------------------------------
-// Modelo de dados local para exibição na tela (ainda sem Room)
-// TODO: substituir por `data class Habit` do Room quando ligar o ViewModel
-// ---------------------------------------------------------------------------
-data class HabitUiModel(
-    val id: Int,
-    val name: String,
-    val category: String,
-    val icon: ImageVector,
-    val accentColor: Color,
-    val isCompleted: Boolean
-)
-
-// ---------------------------------------------------------------------------
-// Enum que representa os filtros da tab bar
-// ---------------------------------------------------------------------------
 enum class HabitFilter(val label: String) {
     ALL("All"),
     PENDING("Pending"),
     COMPLETED("Completed")
 }
 
-// ---------------------------------------------------------------------------
-// Dados estáticos de exemplo
-// TODO: remover quando HabitViewModel estiver conectado
-// ---------------------------------------------------------------------------
-private val sampleHabits = listOf(
-    HabitUiModel(1, "Drink Water",     "Wellness",  Icons.Default.WaterDrop,       Primary,   isCompleted = true),
-    HabitUiModel(2, "Read 10 mins",    "Knowledge", Icons.Default.MenuBook,         Secondary, isCompleted = false),
-    HabitUiModel(3, "Evening Yoga",    "Wellness",  Icons.Default.FitnessCenter,    Secondary, isCompleted = false),
-    HabitUiModel(4, "Mindful Breath",  "Wellness",  Icons.Default.SelfImprovement,  Primary,   isCompleted = false),
-    HabitUiModel(5, "Morning Run",     "Fitness",   Icons.Default.DirectionsRun,    Tertiary,  isCompleted = true),
-    HabitUiModel(6, "Journal Entry",   "Knowledge", Icons.Default.Edit,             Primary,   isCompleted = false),
-    HabitUiModel(7, "Cold Shower",     "Wellness",  Icons.Default.Shower,           Secondary, isCompleted = true),
-)
-
-// ---------------------------------------------------------------------------
-// Tela principal de Hábitos
-// Parâmetros:
-//   currentRoute  → qual aba está ativa no BottomNavBar
-//   onNavigate    → callback que o NavController vai usar para trocar de tela
-//   onAddHabit    → abre AddHabitScreen ao clicar no FAB
-// ---------------------------------------------------------------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitsScreen(
     currentRoute: String = "habits",
     onNavigate: (String) -> Unit = {},
-    onAddHabit: () -> Unit = {}
+    onAddHabit: () -> Unit = {},
+    habitViewModel: HabitViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
-    // `remember` mantém o estado do filtro selecionado entre recomposições
-    var selectedFilter by remember { mutableStateOf(HabitFilter.ALL) }
+    val habits by habitViewModel.allHabits.collectAsStateWithLifecycle()
+    val categories by categoryViewModel.allCategories.collectAsStateWithLifecycle()
+    val categoryMap = remember(categories) { categories.associateBy { it.id } }
 
-    // `derivedStateOf` só recalcula a lista quando `selectedFilter` ou
-    // `sampleHabits` mudam — evita recomposições desnecessárias
-    val filteredHabits by remember(selectedFilter) {
+    var selectedFilter by remember { mutableStateOf(HabitFilter.ALL) }
+    val filteredHabits by remember(selectedFilter, habits) {
         derivedStateOf {
             when (selectedFilter) {
-                HabitFilter.ALL       -> sampleHabits
-                HabitFilter.PENDING   -> sampleHabits.filter { !it.isCompleted }
-                HabitFilter.COMPLETED -> sampleHabits.filter { it.isCompleted }
+                HabitFilter.ALL       -> habits
+                HabitFilter.PENDING   -> habits.filter { !it.isCompleted }
+                HabitFilter.COMPLETED -> habits.filter { it.isCompleted }
             }
         }
     }
+
+    val accentColors = listOf(Primary, Secondary, Tertiary)
 
     Scaffold(
         containerColor = Background,
@@ -120,29 +92,29 @@ fun HabitsScreen(
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Cabeçalho da seção
             item {
                 Spacer(modifier = Modifier.height(16.dp))
-                HabitsHeader(total = sampleHabits.size, completed = sampleHabits.count { it.isCompleted })
-                Spacer(modifier = Modifier.height(20.dp))
-                // Barra de filtros (chips)
-                FilterTabBar(
-                    selected = selectedFilter,
-                    onFilterChange = { selectedFilter = it }
+                HabitsHeader(
+                    total = habits.size,
+                    completed = habits.count { it.isCompleted }
                 )
+                Spacer(modifier = Modifier.height(20.dp))
+                FilterTabBar(selected = selectedFilter, onFilterChange = { selectedFilter = it })
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // Lista de hábitos filtrada
-            // `items` do LazyColumn itera sobre a lista e cria um item por hábito
             if (filteredHabits.isEmpty()) {
                 item { EmptyState(filter = selectedFilter) }
             } else {
-                items(
-                    items = filteredHabits,
-                    key = { it.id } // chave única garante animações corretas
-                ) { habit ->
-                    HabitCard(habit = habit)
+                items(filteredHabits, key = { it.id }) { habit ->
+                    val categoryName = categoryMap[habit.categoryId]?.name ?: "Other"
+                    val accentColor = accentColors[(habit.categoryId - 1).coerceAtLeast(0) % accentColors.size]
+                    HabitCard(
+                        habit = habit,
+                        categoryName = categoryName,
+                        accentColor = accentColor,
+                        onToggle = { habitViewModel.toggleHabitCompletion(habit) }
+                    )
                 }
             }
 
@@ -151,9 +123,6 @@ fun HabitsScreen(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Cabeçalho: título + contagem de progresso
-// ---------------------------------------------------------------------------
 @Composable
 private fun HabitsHeader(total: Int, completed: Int) {
     Row(
@@ -162,21 +131,9 @@ private fun HabitsHeader(total: Int, completed: Int) {
         verticalAlignment = Alignment.Bottom
     ) {
         Column {
-            Text(
-                text = "My Habits",
-                color = OnSurface,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.5).sp
-            )
-            Text(
-                text = "$completed of $total completed today",
-                color = OnSurfaceVariant,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Text(text = "My Habits", color = OnSurface, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.5).sp)
+            Text(text = "$completed of $total completed today", color = OnSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.Medium)
         }
-        // Badge de progresso: ex. "3/7"
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
@@ -184,25 +141,13 @@ private fun HabitsHeader(total: Int, completed: Int) {
                 .border(1.dp, Primary.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Text(
-                text = "$completed/$total",
-                color = Primary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Black
-            )
+            Text(text = "$completed/$total", color = Primary, fontSize = 15.sp, fontWeight = FontWeight.Black)
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// Barra de filtros com 3 chips: All / Pending / Completed
-// animateColorAsState anima a transição de cor ao trocar de filtro
-// ---------------------------------------------------------------------------
 @Composable
-private fun FilterTabBar(
-    selected: HabitFilter,
-    onFilterChange: (HabitFilter) -> Unit
-) {
+private fun FilterTabBar(selected: HabitFilter, onFilterChange: (HabitFilter) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -213,8 +158,6 @@ private fun FilterTabBar(
     ) {
         HabitFilter.entries.forEach { filter ->
             val isSelected = filter == selected
-
-            // Anima a cor de fundo do chip suavemente (300ms)
             val bgColor by animateColorAsState(
                 targetValue = if (isSelected) Primary else Color.Transparent,
                 animationSpec = tween(durationMillis = 300),
@@ -225,7 +168,6 @@ private fun FilterTabBar(
                 animationSpec = tween(durationMillis = 300),
                 label = "chip_text"
             )
-
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -235,51 +177,34 @@ private fun FilterTabBar(
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = filter.label,
-                    color = textColor,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(text = filter.label, color = textColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// Card de um hábito individual
-// Muda de aparência conforme isCompleted
-// ---------------------------------------------------------------------------
 @Composable
-private fun HabitCard(habit: HabitUiModel) {
-    // Cor de fundo depende do estado do hábito
-    val cardBg = if (habit.isCompleted)
-        habit.accentColor.copy(alpha = 0.08f)
-    else
-        SurfaceContainerLow
+private fun HabitCard(habit: Habit, categoryName: String, accentColor: Color, onToggle: () -> Unit) {
+    val cardBg = if (habit.isCompleted) accentColor.copy(alpha = 0.08f) else SurfaceContainerLow
+    val icon = habitIconFor(habit.name)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(cardBg)
-            // Borda colorida à esquerda para hábitos pendentes
             .then(
                 if (!habit.isCompleted)
                     Modifier.drawBehind {
-                        drawRect(
-                            color = habit.accentColor.copy(alpha = 0.5f),
-                            topLeft = Offset.Zero,
-                            size = Size(4.dp.toPx(), size.height)
-                        )
+                        drawRect(color = accentColor.copy(alpha = 0.5f), topLeft = Offset.Zero, size = Size(4.dp.toPx(), size.height))
                     }
                 else Modifier
             )
+            .clickable { onToggle() }
             .padding(20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Ícone + nome + categoria
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -289,18 +214,10 @@ private fun HabitCard(habit: HabitUiModel) {
                 modifier = Modifier
                     .size(52.dp)
                     .clip(CircleShape)
-                    .background(
-                        if (habit.isCompleted) habit.accentColor
-                        else SurfaceContainerHigh
-                    ),
+                    .background(if (habit.isCompleted) accentColor else SurfaceContainerHigh),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = habit.icon,
-                    contentDescription = null,
-                    tint = if (habit.isCompleted) OnPrimary else habit.accentColor,
-                    modifier = Modifier.size(26.dp)
-                )
+                Icon(imageVector = icon, contentDescription = null, tint = if (habit.isCompleted) OnPrimary else accentColor, modifier = Modifier.size(26.dp))
             }
             Column {
                 Text(
@@ -308,46 +225,31 @@ private fun HabitCard(habit: HabitUiModel) {
                     color = if (habit.isCompleted) OnSurface.copy(alpha = 0.5f) else OnSurface,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
-                    // Riscado quando concluído
                     textDecoration = if (habit.isCompleted) TextDecoration.LineThrough else TextDecoration.None
                 )
                 Text(
-                    text = habit.category,
-                    color = if (habit.isCompleted) habit.accentColor else OnSurfaceVariant,
+                    text = categoryName,
+                    color = if (habit.isCompleted) accentColor else OnSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
         }
 
-        // Botão de check — preenchido se concluído, vazio se pendente
         Box(
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .then(
-                    if (habit.isCompleted)
-                        Modifier.background(habit.accentColor)
-                    else
-                        Modifier.border(2.dp, OutlineVariant, CircleShape)
-                ),
+                .then(if (habit.isCompleted) Modifier.background(accentColor) else Modifier.border(2.dp, OutlineVariant, CircleShape)),
             contentAlignment = Alignment.Center
         ) {
             if (habit.isCompleted) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Completed",
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
-                )
+                Icon(imageVector = Icons.Default.Check, contentDescription = "Completed", tint = Color.White, modifier = Modifier.size(18.dp))
             }
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// Estado vazio — exibido quando nenhum hábito bate com o filtro ativo
-// ---------------------------------------------------------------------------
 @Composable
 private fun EmptyState(filter: HabitFilter) {
     val message = when (filter) {
@@ -356,24 +258,11 @@ private fun EmptyState(filter: HabitFilter) {
         HabitFilter.ALL       -> "No habits yet.\nCreate your first ritual!"
     }
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Icon(
-            imageVector = Icons.Default.CheckCircle,
-            contentDescription = null,
-            tint = Primary.copy(alpha = 0.3f),
-            modifier = Modifier.size(64.dp)
-        )
-        Text(
-            text = message,
-            color = OnSurfaceVariant,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium,
-            lineHeight = 22.sp
-        )
+        Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = Primary.copy(alpha = 0.3f), modifier = Modifier.size(64.dp))
+        Text(text = message, color = OnSurfaceVariant, fontSize = 15.sp, fontWeight = FontWeight.Medium, lineHeight = 22.sp)
     }
 }
