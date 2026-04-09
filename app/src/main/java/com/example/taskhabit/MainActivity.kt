@@ -2,6 +2,7 @@ package com.example.taskhabit
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import dagger.hilt.android.AndroidEntryPoint
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import com.example.taskhabit.presentation.ui.screens.StatsScreen
 import com.example.taskhabit.presentation.ui.screens.TodayScreen
 import com.example.taskhabit.ui.theme.TaskHabitTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

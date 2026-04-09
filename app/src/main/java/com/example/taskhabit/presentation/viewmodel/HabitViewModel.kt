@@ -4,12 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhabit.data.local.entity.Habit
 import com.example.taskhabit.data.repository.HabitRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HabitViewModel(
+// @HiltViewModel → avisa o Hilt que esse ViewModel precisa de injeção
+// @Inject constructor → define o que o Hilt deve entregar (HabitRepository)
+@HiltViewModel
+class HabitViewModel @Inject constructor(
     private val repository: HabitRepository
 ) : ViewModel() {
 
