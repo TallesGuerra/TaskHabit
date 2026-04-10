@@ -47,7 +47,7 @@ fun HabitsScreen(
     currentRoute: String = "habits",
     onNavigate: (String) -> Unit = {},
     onAddHabit: () -> Unit = {},
-    onEdit = { habitId -> navController.navigate("edit_habit/$habitId"),
+    onEdit: (Int) -> Unit = {},                       
     habitViewModel: HabitViewModel = hiltViewModel(),
     categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
@@ -107,19 +107,18 @@ fun HabitsScreen(
             if (filteredHabits.isEmpty()) {
                 item { EmptyState(filter = selectedFilter) }
             } else {
-              items(filteredHabits, key = { it.id }) { habit ->
-                val categoryName = categoryMap[habit.categoryId]?.name ?: "Other"
-                val accentColor = accentColors[(habit.categoryId - 1).coerceAtLeast(0) % accentColors.size]
-
-                SwipeableHabitCard(
-                habit = habit,
-                categoryName = categoryName,
-                accentColor = accentColor,
-                onToggle = { habitViewModel.toggleHabitCompletion(habit) },
-                onDelete = { habitViewModel.deleteHabit(habit) },
-                onEdit  = { onEdit(habit.id) }   // ← novo callback
-                     )
-                }            
+                items(filteredHabits, key = { it.id }) { habit ->
+                    val categoryName = categoryMap[habit.categoryId]?.name ?: "Other"
+                    val accentColor = accentColors[(habit.categoryId - 1).coerceAtLeast(0) % accentColors.size]
+                    SwipeableHabitCard(
+                        habit = habit,
+                        categoryName = categoryName,
+                        accentColor = accentColor,
+                        onToggle = { habitViewModel.toggleHabitCompletion(habit) },
+                        onDelete = { habitViewModel.deleteHabit(habit) },
+                        onEdit = { onEdit(habit.id) }
+                    )
+                }
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -188,7 +187,13 @@ private fun FilterTabBar(selected: HabitFilter, onFilterChange: (HabitFilter) ->
 }
 
 @Composable
-private fun HabitCard(habit: Habit, categoryName: String, accentColor: Color, onToggle: () -> Unit) {
+private fun HabitCard(
+    habit: Habit,
+    categoryName: String,
+    accentColor: Color,
+    onToggle: () -> Unit,
+    onEdit: () -> Unit                                 
+) {
     val cardBg = if (habit.isCompleted) accentColor.copy(alpha = 0.08f) else SurfaceContainerLow
     val icon = habitIconFor(habit.name)
 
@@ -240,15 +245,28 @@ private fun HabitCard(habit: Habit, categoryName: String, accentColor: Color, on
             }
         }
 
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .then(if (habit.isCompleted) Modifier.background(accentColor) else Modifier.border(2.dp, OutlineVariant, CircleShape)),
-            contentAlignment = Alignment.Center
-        ) {
-            if (habit.isCompleted) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = "Completed", tint = Color.White, modifier = Modifier.size(18.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Botão editar                             
+            IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = OnSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+            // Check circle
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .then(if (habit.isCompleted) Modifier.background(accentColor) else Modifier.border(2.dp, OutlineVariant, CircleShape)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (habit.isCompleted) {
+                    Icon(imageVector = Icons.Default.Check, contentDescription = "Completed", tint = Color.White, modifier = Modifier.size(18.dp))
+                }
             }
         }
     }
@@ -310,7 +328,6 @@ private fun SwipeableHabitCard(
             categoryName = categoryName,
             accentColor = accentColor,
             onToggle = onToggle,
-            onEdit = onEdit
-        )
+            onEdit = onEdit                           
     }
 }
