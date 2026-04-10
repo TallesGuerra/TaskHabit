@@ -17,6 +17,9 @@ interface HabitDao {
 
     @Query("SELECT * FROM habits")
     fun getAllHabits(): Flow<List<Habit>>
+    
+    @Query("SELECT * FROM habits WHERE id = :id")
+    fun getHabitById(id: Int): Flow<Habit?>
 
     @Query("SELECT * FROM habits WHERE categoryId = :categoryId")
     fun getHabitsByCategory(categoryId: Int): Flow<List<Habit>>
@@ -26,4 +29,5 @@ interface HabitDao {
 
     @Query("SELECT * FROM habits WHERE isCompleted = 1")
     fun getCompletedHabits(): Flow<List<Habit>>
+
 }

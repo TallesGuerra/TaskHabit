@@ -58,4 +58,8 @@ class HabitViewModel @Inject constructor(
             }
         }
     }
+
+    fun getHabitById(id: Int): Flow<Habit?> = repository.getHabitById(id)
+    
+
 }

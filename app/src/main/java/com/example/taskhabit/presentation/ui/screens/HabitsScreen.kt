@@ -47,6 +47,7 @@ fun HabitsScreen(
     currentRoute: String = "habits",
     onNavigate: (String) -> Unit = {},
     onAddHabit: () -> Unit = {},
+    onEdit = { habitId -> navController.navigate("edit_habit/$habitId"),
     habitViewModel: HabitViewModel = hiltViewModel(),
     categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
@@ -106,16 +107,19 @@ fun HabitsScreen(
             if (filteredHabits.isEmpty()) {
                 item { EmptyState(filter = selectedFilter) }
             } else {
-                items(filteredHabits, key = { it.id }) { habit ->
-                    val categoryName = categoryMap[habit.categoryId]?.name ?: "Other"
-                    val accentColor = accentColors[(habit.categoryId - 1).coerceAtLeast(0) % accentColors.size]
-                    HabitCard(
-                        habit = habit,
-                        categoryName = categoryName,
-                        accentColor = accentColor,
-                        onToggle = { habitViewModel.toggleHabitCompletion(habit) }
-                    )
-                }
+              items(filteredHabits, key = { it.id }) { habit ->
+                val categoryName = categoryMap[habit.categoryId]?.name ?: "Other"
+                val accentColor = accentColors[(habit.categoryId - 1).coerceAtLeast(0) % accentColors.size]
+
+                SwipeableHabitCard(
+                habit = habit,
+                categoryName = categoryName,
+                accentColor = accentColor,
+                onToggle = { habitViewModel.toggleHabitCompletion(habit) },
+                onDelete = { habitViewModel.deleteHabit(habit) },
+                onEdit  = { onEdit(habit.id) }   // ← novo callback
+                     )
+                }            
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -264,5 +268,49 @@ private fun EmptyState(filter: HabitFilter) {
     ) {
         Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = Primary.copy(alpha = 0.3f), modifier = Modifier.size(64.dp))
         Text(text = message, color = OnSurfaceVariant, fontSize = 15.sp, fontWeight = FontWeight.Medium, lineHeight = 22.sp)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeableHabitCard(
+    habit: Habit,
+    categoryName: String,
+    accentColor: Color,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete(); true
+            } else false
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFFEF4444))
+                    .padding(end = 24.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
+            }
+        }
+    ) {
+        HabitCard(
+            habit = habit,
+            categoryName = categoryName,
+            accentColor = accentColor,
+            onToggle = onToggle,
+            onEdit = onEdit
+        )
     }
 }
