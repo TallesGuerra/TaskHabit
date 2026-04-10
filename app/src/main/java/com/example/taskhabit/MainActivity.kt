@@ -21,6 +21,9 @@ import com.example.taskhabit.presentation.ui.screens.HabitsScreen
 import com.example.taskhabit.presentation.ui.screens.StatsScreen
 import com.example.taskhabit.presentation.ui.screens.TodayScreen
 import com.example.taskhabit.ui.theme.TaskHabitTheme
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.taskhabit.presentation.ui.screens.EditHabitScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -45,8 +48,21 @@ class MainActivity : ComponentActivity() {
                             currentRoute = "habits",
                             onNavigate = { route -> navController.navigate(route) },
                             onAddHabit = { navController.navigate("add_habit") }
+                            onEdit = { habitId -> navController.navigate("edit_habit/$habitId") }
                         )
                     }
+
+                    composable(
+                        route = "edit_habit/{habitId}",
+                        arguments = listOf(navArgument("habitId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val habitId = backStackEntry.arguments?.getInt("habitId") ?: return@composable
+                        EditHabitScreen(
+                            habitId = habitId,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+
                     composable("stats") {
                         StatsScreen(
                             currentRoute = "stats",

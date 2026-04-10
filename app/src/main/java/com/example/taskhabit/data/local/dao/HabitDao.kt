@@ -30,4 +30,8 @@ interface HabitDao {
     @Query("SELECT * FROM habits WHERE isCompleted = 1")
     fun getCompletedHabits(): Flow<List<Habit>>
 
+    @Query("UPDATE habits SET isCompleted = 0")
+    suspend fun resetAllHabits()
+
+
 }
