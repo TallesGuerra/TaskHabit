@@ -11,8 +11,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// @HiltViewModel → avisa o Hilt que esse ViewModel precisa de injeção
-// @Inject constructor → define o que o Hilt deve entregar (HabitRepository)
+
 @HiltViewModel
 class HabitViewModel @Inject constructor(
     private val repository: HabitRepository
@@ -49,6 +48,14 @@ class HabitViewModel @Inject constructor(
     fun toggleHabitCompletion(habit: Habit) {
         viewModelScope.launch {
             repository.toggleHabitCompletion(habit)
+
+            if (!habit.isCompleted){
+                completionRepository.recordCompletion(habit.id)
+                streakRepository.onHabitCompleted(habit.id)
+            } else {
+                streakRepository.onHabitCompleted(habit.id)
+            
+            }
         }
     }
 }

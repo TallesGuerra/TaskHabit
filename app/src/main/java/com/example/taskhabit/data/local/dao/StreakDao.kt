@@ -14,4 +14,10 @@ interface StreakDao {
 
     @Query("SELECT * FROM streaks WHERE habitId = :habitId")
     fun getStreakByHabit(habitId: Int): Flow<Streak?>
+
+
+    //versão suspend para usar dentro de coroutines
+    @Query("SELECT * FROM streaks WHERE habitId = :habitId LIMIT 1")
+    suspend fun getStreakByHabitSync(habitId: Int): Streak?
+
 }
