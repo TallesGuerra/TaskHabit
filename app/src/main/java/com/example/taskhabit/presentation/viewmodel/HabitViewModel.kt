@@ -3,19 +3,23 @@ package com.example.taskhabit.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taskhabit.data.local.entity.Habit
+import com.example.taskhabit.data.repository.HabitCompletionRepository
 import com.example.taskhabit.data.repository.HabitRepository
+import com.example.taskhabit.data.repository.StreakRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// @HiltViewModel → avisa o Hilt que esse ViewModel precisa de injeção
-// @Inject constructor → define o que o Hilt deve entregar (HabitRepository)
+
 @HiltViewModel
 class HabitViewModel @Inject constructor(
-    private val repository: HabitRepository
+    private val repository: HabitRepository,
+    private val completionRepository: HabitCompletionRepository,
+    private val streakRepository: StreakRepository
 ) : ViewModel() {
 
     val allHabits: StateFlow<List<Habit>> = repository
@@ -49,6 +53,18 @@ class HabitViewModel @Inject constructor(
     fun toggleHabitCompletion(habit: Habit) {
         viewModelScope.launch {
             repository.toggleHabitCompletion(habit)
+
+            if (!habit.isCompleted){
+                completionRepository.recordCompletion(habit.id)
+                streakRepository.onHabitCompleted(habit.id)
+            } else {
+                streakRepository.onHabitUncompleted(habit.id)
+            
+            }
         }
     }
+
+    fun getHabitById(id: Int): Flow<Habit?> = repository.getHabitById(id)
+    
+
 }

@@ -22,4 +22,6 @@ class HabitRepository(private val habitDao: HabitDao) {
 
     fun getHabitsByCategory(categoryId: Int): Flow<List<Habit>> =
         habitDao.getHabitsByCategory(categoryId)
+
+    fun getHabitById(id: Int): Flow<Habit?> = habitDao.getHabitById(id)
 }

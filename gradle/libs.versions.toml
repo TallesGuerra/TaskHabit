@@ -6,9 +6,9 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.13.0"
-kotlin = "2.2.20"
+kotlin = "2.0.21"
 composeBom = "2024.09.00"
-ksp = "2.2.20-2.0.4"
+ksp = "2.0.21-1.0.26"
 room = "2.6.1"
 lifecycleViewmodelCompose = "2.8.7"
 coroutines = "1.7.3"
@@ -18,8 +18,10 @@ googleid = "1.1.0"
 uiTextGoogleFonts = "1.7.8"
 hilt = "2.56.2"
 hiltNavigationCompose = "1.2.0"
+workManager = "2.9.1"
 
 [libraries]
+work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
