@@ -255,6 +255,7 @@ private fun HabitCard(
                     modifier = Modifier.size(18.dp)
                 )
             }
+            }
             Spacer(modifier = Modifier.width(4.dp))
             // Check circle
             Box(
@@ -271,6 +272,7 @@ private fun HabitCard(
         }
     }
 }
+
 
 @Composable
 private fun EmptyState(filter: HabitFilter) {
@@ -328,6 +330,7 @@ private fun SwipeableHabitCard(
             categoryName = categoryName,
             accentColor = accentColor,
             onToggle = onToggle,
-            onEdit = onEdit                           
+            onEdit = onEdit
+        )
     }
 }

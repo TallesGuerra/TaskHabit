@@ -7,55 +7,50 @@ import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 
-
-class class StreakRepository @Inject constructor(
+class StreakRepository @Inject constructor(
     private val dao: StreakDao
-){
-    fun getStreakForHabit(habitId: Int): Flow<Streak> =
+) {
+    fun getStreakForHabit(habitId: Int): Flow<Streak?> =
         dao.getStreakByHabit(habitId)
 
-    suspend fun onHabitCompleted(habitId: Int){
+    suspend fun onHabitCompleted(habitId: Int) {
         val existing = dao.getStreakByHabitSync(habitId)
         val now = Date()
 
-    
-    if (existing == null){
-        // Primeira vez completando esse habito
-        dao.insertStreak(
-            Streak(habitId = habitId, currentStreak = 1,
-                 longestStreak = 1, lastCompletedAt = now
-             )
-        return
-    }
+        if (existing == null) {
+            dao.insertStreak(
+                Streak(habitId = habitId, currentStreak = 1, longestStreak = 1, lastCompletedAt = now)
+            )
+            return
+        }
 
         val lastCompleted = existing.lastCompletedAt
         val todayStart = startOfDay(now)
         val yesterdayStart = startOfDay(now, offsetDays = -1)
 
-        val newCurrent = when{
-            lastCompleted == null               -> 1
-            lastCompleted >= todayStart         -> existing.currentStreak // já marcou hoje
-            lastCompleted >= yesterdayStart     -> existing.currentStreak + 1  // dia consecutivo
-            else                                -> 1  // streak quebrado
+        val newCurrent = when {
+            lastCompleted == null           -> 1
+            lastCompleted >= todayStart     -> existing.currentStreak
+            lastCompleted >= yesterdayStart -> existing.currentStreak + 1
+            else                            -> 1
         }
 
         dao.updateStreak(
             existing.copy(
                 currentStreak = newCurrent,
-                longestStreak = maxOf(existing,longestStreak, newCurrent),
+                longestStreak = maxOf(existing.longestStreak, newCurrent),
                 lastCompletedAt = now
             )
-        ) 
+        )
     }
 
-    suspend fun onHabitCompleted(habitId: Int){
+    suspend fun onHabitUncompleted(habitId: Int) {
         val existing = dao.getStreakByHabitSync(habitId) ?: return
-        val decremented = (existing.currentStreak -1 ).coerceAtLeast(0)
-        dao.updateStreak(existing.copy(currentStreak =decremented))
+        dao.updateStreak(existing.copy(currentStreak = (existing.currentStreak - 1).coerceAtLeast(0)))
     }
 
-    private fun startOfDay(date: Date, offsetDays: Int = 0): Date{
-        return Calendar.getInstance().apply{
+    private fun startOfDay(date: Date, offsetDays: Int = 0): Date {
+        return Calendar.getInstance().apply {
             time = date
             add(Calendar.DAY_OF_YEAR, offsetDays)
             set(Calendar.HOUR_OF_DAY, 0)
@@ -64,6 +59,4 @@ class class StreakRepository @Inject constructor(
             set(Calendar.MILLISECOND, 0)
         }.time
     }
-
 }
-

@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                         HabitsScreen(
                             currentRoute = "habits",
                             onNavigate = { route -> navController.navigate(route) },
-                            onAddHabit = { navController.navigate("add_habit") }
+                            onAddHabit = { navController.navigate("add_habit") },
                             onEdit = { habitId -> navController.navigate("edit_habit/$habitId") }
                         )
                     }
