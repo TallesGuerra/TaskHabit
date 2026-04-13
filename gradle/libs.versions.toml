@@ -16,7 +16,7 @@ navigationCompose = "2.8.9"
 credentialsManager = "1.2.2"
 googleid = "1.1.0"
 uiTextGoogleFonts = "1.7.8"
-hilt = "2.51.1"
+hilt = "2.56.2"
 hiltNavigationCompose = "1.2.0"
 workManager = "2.9.1"
 
