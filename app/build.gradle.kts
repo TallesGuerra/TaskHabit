@@ -3,11 +3,11 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt.android.plugin)
 }
 
 android {
     namespace = "com.example.taskhabit"
+    buildToolsVersion = "36.1.0"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -88,3 +88,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
+
+apply(plugin = "com.google.dagger.hilt.android")
