@@ -12,8 +12,8 @@
 ## ⬇️ Download
 
 <p align="center">
-  <a href="https://github.com/TallesGuerra/TaskHabit/releases/tag/v1.0.0">
-    <img src="https://img.shields.io/badge/Download%20APK-v1.0.0-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"/>
+  <a href="https://github.com/TallesGuerra/TaskHabit/releases/tag/v1.1.0">
+    <img src="https://img.shields.io/badge/Download%20APK-v1.1.0-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"/>
   </a>
 </p>
 
@@ -46,6 +46,10 @@
 - ✅ Stats screen with progress indicators and completion rate
 - ✅ Badges screen to showcase achievements
 - ✅ Category-based color coding across all screens
+- ✅ User profile — name, email and birth date persisted via DataStore
+- ✅ Custom habit schedule — pick specific days of the week
+- ✅ Language support — English 🇺🇸 and Portuguese 🇧🇷
+- ✅ Personalized top bar — shows user name after profile is saved
 - ✅ Clean dark-themed UI with Material Design 3
 
 ---
@@ -56,7 +60,7 @@
 com.example.taskhabit/
 │
 ├── 📱 HabitApplication.kt              # @HiltAndroidApp + WorkManager daily reset
-├── 📱 MainActivity.kt                  # Navigation host with Compose NavController
+├── 📱 MainActivity.kt                  # Navigation host + language-aware CompositionLocalProvider
 │
 ├── 🗄️ data/
 │   ├── local/
@@ -66,14 +70,16 @@ com.example.taskhabit/
 │   │   │   ├── HabitCompletionDao.kt
 │   │   │   └── StreakDao.kt
 │   │   ├── database/
-│   │   │   ├── HabitDatabase.kt        # Room database definition
+│   │   │   ├── HabitDatabase.kt        # Room database + migrations
 │   │   │   └── converter/
 │   │   │       └── DateConverter.kt    # TypeConverter for Date ↔ Long
 │   │   └── entity/
-│   │       ├── Habit.kt
+│   │       ├── Habit.kt                # frequency field (DAILY / custom days)
 │   │       ├── Category.kt
 │   │       ├── HabitCompletion.kt
 │   │       └── Streak.kt
+│   ├── preferences/
+│   │   └── UserPreferencesRepository.kt  # DataStore — profile + language
 │   └── repository/
 │       ├── HabitRepository.kt
 │       ├── CategoryRepository.kt
@@ -82,34 +88,39 @@ com.example.taskhabit/
 │
 ├── 🧩 domain/
 │   └── model/
-│       ├── HabitWithCategory.kt        # Join model for display
-│       └── HabitWithStreak.kt          # Join model for streak display
+│       ├── HabitWithCategory.kt
+│       └── HabitWithStreak.kt
 │
 ├── 💉 di/
-│   └── DatabaseModule.kt              # Hilt @Module — DAOs, repositories
+│   ├── AppModule.kt                    # Provides DataStore<Preferences>
+│   └── DatabaseModule.kt              # Provides DAOs, repositories
 │
 ├── 🖼️ presentation/
 │   ├── ui/
 │   │   ├── components/
-│   │   │   ├── BottomNavBar.kt         # Bottom navigation bar
-│   │   │   └── KineticTopAppBar.kt     # Animated top app bar
+│   │   │   ├── BottomNavBar.kt         # Localized bottom navigation
+│   │   │   └── KineticTopAppBar.kt     # Shows user name + avatar/settings nav
 │   │   ├── screens/
 │   │   │   ├── TodayScreen.kt          # Daily focus view
 │   │   │   ├── HabitsScreen.kt         # Full habit list with swipe-to-delete
-│   │   │   ├── AddHabitScreen.kt       # Habit creation form
+│   │   │   ├── AddHabitScreen.kt       # Habit creation + custom day picker
 │   │   │   ├── EditHabitScreen.kt      # Habit editing form
+│   │   │   ├── ProfileScreen.kt        # User profile (name, email, birth date)
+│   │   │   ├── SettingsScreen.kt       # Language selection
 │   │   │   ├── StatsScreen.kt          # Progress and completion stats
 │   │   │   └── BadgesScreen.kt         # Achievements display
 │   │   └── util/
 │   │       └── HabitIconMapper.kt      # Maps habit names to Material icons
 │   ├── viewmodel/
 │   │   ├── HabitViewModel.kt           # Habit CRUD + toggle + streak logic
-│   │   └── CategoryViewModel.kt        # Category list management
+│   │   ├── CategoryViewModel.kt        # Category list management
+│   │   └── ProfileViewModel.kt         # Profile + language management
 │   └── worker/
 │       └── ResetHabitsWorker.kt        # WorkManager — resets habits at midnight
 │
 └── 🎨 ui/theme/
     ├── Color.kt
+    ├── Strings.kt                      # EN and PT string sets + LocalStrings
     ├── Theme.kt
     └── Type.kt
 ```
@@ -126,19 +137,20 @@ com.example.taskhabit/
 
 ## 🔧 Technologies
 
-| Technology              | Version     | Description                                  |
-|-------------------------|-------------|----------------------------------------------|
-| **Kotlin**              | 2.0.21      | Modern, concise Android language             |
-| **Jetpack Compose**     | BOM 2024.09 | Declarative and reactive UI toolkit          |
-| **Material 3**          | Latest      | Google's latest design system                |
-| **Room**                | 2.6.1       | SQLite abstraction with compile-time safety  |
-| **Hilt**                | 2.56.2      | Compile-time dependency injection            |
-| **WorkManager**         | 2.9.1       | Guaranteed background task scheduling        |
-| **Navigation Compose**  | 2.8.9       | Type-safe in-app navigation                  |
-| **Coroutines**          | 1.7.3       | Asynchronous and concurrent programming      |
-| **StateFlow / Flow**    | —           | Reactive state and stream management         |
-| **KSP**                 | 2.0.21-1.0.26 | Annotation processing for Room and Hilt    |
-| **Android SDK**         | 24+         | Compatible with 95%+ of active devices       |
+| Technology              | Version       | Description                                  |
+|-------------------------|---------------|----------------------------------------------|
+| **Kotlin**              | 2.0.21        | Modern, concise Android language             |
+| **Jetpack Compose**     | BOM 2024.09   | Declarative and reactive UI toolkit          |
+| **Material 3**          | Latest        | Google's latest design system                |
+| **Room**                | 2.6.1         | SQLite abstraction with compile-time safety  |
+| **DataStore**           | 1.1.1         | Jetpack key-value persistence (profile/lang) |
+| **Hilt**                | 2.56.2        | Compile-time dependency injection            |
+| **WorkManager**         | 2.9.1         | Guaranteed background task scheduling        |
+| **Navigation Compose**  | 2.8.9         | Type-safe in-app navigation                  |
+| **Coroutines**          | 1.7.3         | Asynchronous and concurrent programming      |
+| **StateFlow / Flow**    | —             | Reactive state and stream management         |
+| **KSP**                 | 2.0.21-1.0.26 | Annotation processing for Room and Hilt      |
+| **Android SDK**         | 24+           | Compatible with 95%+ of active devices       |
 
 ---
 
@@ -148,7 +160,7 @@ com.example.taskhabit/
 
 - Android Studio Hedgehog (2023.1.1) or higher
 - JDK 17+
-- Android SDK 35
+- Android SDK 36
 - Physical device or emulator with API 24+
 
 ### Steps
@@ -174,13 +186,15 @@ com.example.taskhabit/
 ## 💡 Concepts Demonstrated
 
 - **MVVM** with `@HiltViewModel` and `StateFlow` for reactive, lifecycle-aware state
-- **Room Database** with entities, DAOs, TypeConverters, and foreign key relationships
+- **Room Database** with entities, DAOs, TypeConverters, foreign keys, and schema migrations
+- **DataStore Preferences** for lightweight persistence of user profile and language
 - **Hilt DI** with `@Module`, `@Provides`, `@Singleton`, and `@ApplicationContext`
 - **WorkManager** with `CoroutineWorker` for reliable midnight habit resets
 - **Jetpack Navigation** with typed route arguments (`NavType.IntType`)
+- **CompositionLocalProvider** for app-wide language injection without rebuilding the tree
 - **SwipeToDismissBox** for gesture-based deletion with animated background
 - **`collectAsStateWithLifecycle()`** for safe, lifecycle-scoped Flow collection in Compose
-- **Coroutines** with `viewModelScope.launch` for all database operations
+- **Coroutines** with `viewModelScope.launch` for all database and DataStore operations
 - **`LazyColumn`** with `key` parameter for efficient, animated list rendering
 - Modular and reusable Composable component architecture
 
@@ -199,6 +213,9 @@ com.example.taskhabit/
 - [x] Stats screen with progress indicators
 - [x] Badges screen
 - [x] MVVM + Repository + Hilt architecture
+- [x] User profile with name, email and birth date
+- [x] Language support — EN / PT
+- [x] Custom habit schedule (specific days of the week)
 - [ ] Push notifications for daily habit reminders
 - [ ] Stats with real chart data (completion over time)
 - [ ] Unlockable badges based on streak milestones
