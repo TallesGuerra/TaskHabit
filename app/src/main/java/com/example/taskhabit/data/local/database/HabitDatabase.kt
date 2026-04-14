@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.taskhabit.data.local.dao.CategoryDao
 import com.example.taskhabit.data.local.dao.HabitCompletionDao
@@ -23,7 +24,7 @@ import com.example.taskhabit.data.local.entity.Streak
         Streak::class,
         HabitCompletion::class
     ],
-    version = 1
+    version = 2
 )
 @TypeConverters(DateConverter::class)
 abstract class HabitDatabase : RoomDatabase() {
@@ -35,6 +36,12 @@ abstract class HabitDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: HabitDatabase? = null
+
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE habits ADD COLUMN frequency TEXT NOT NULL DEFAULT 'DAILY'")
+            }
+        }
 
         private val seedCallback = object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
@@ -52,6 +59,7 @@ abstract class HabitDatabase : RoomDatabase() {
                     HabitDatabase::class.java,
                     "habit_database"
                 )
+                .addMigrations(MIGRATION_1_2)
                 .addCallback(seedCallback)
                 .build()
                 .also { INSTANCE = it }

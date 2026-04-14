@@ -42,6 +42,8 @@ fun TodayScreen(
     currentRoute: String = "today",
     onNavigate: (String) -> Unit = {},
     onAddHabit: () -> Unit = {},
+    onAvatarClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     viewModel: HabitViewModel = hiltViewModel()
 ) {
     val habits by viewModel.allHabits.collectAsStateWithLifecycle()
@@ -50,7 +52,7 @@ fun TodayScreen(
 
     Scaffold(
         containerColor = Background,
-        topBar = { KineticTopAppBar() },
+        topBar = { KineticTopAppBar(onAvatarClick = onAvatarClick, onSettingsClick = onSettingsClick) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddHabit,

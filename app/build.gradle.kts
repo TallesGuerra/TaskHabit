@@ -51,6 +51,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
+    // DataStore
+    implementation(libs.datastore.preferences)
+
     // WorkManager
     implementation(libs.work.runtime.ktx)
 

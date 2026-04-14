@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.taskhabit.ui.theme.*
+import com.example.taskhabit.ui.theme.LocalStrings
 
 private data class NavItem(
     val route: String,
@@ -35,11 +36,12 @@ fun HabitBottomNavBar(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val strings = LocalStrings.current
     val items = listOf(
-        NavItem("today", Icons.Default.CalendarToday, "Today"),
-        NavItem("habits", Icons.AutoMirrored.Filled.FormatListBulleted, "Habits"),
-        NavItem("stats", Icons.Default.QueryStats, "Stats"),
-        NavItem("badges", Icons.Default.MilitaryTech, "Badges")
+        NavItem("today", Icons.Default.CalendarToday, strings.navToday),
+        NavItem("habits", Icons.AutoMirrored.Filled.FormatListBulleted, strings.navHabits),
+        NavItem("stats", Icons.Default.QueryStats, strings.navStats),
+        NavItem("badges", Icons.Default.MilitaryTech, strings.navBadges)
     )
 
     Box(

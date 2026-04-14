@@ -28,6 +28,7 @@ import com.example.taskhabit.data.local.entity.Habit
 import com.example.taskhabit.presentation.viewmodel.CategoryViewModel
 import com.example.taskhabit.presentation.viewmodel.HabitViewModel
 import com.example.taskhabit.ui.theme.*
+import com.example.taskhabit.ui.theme.LocalStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,8 +37,22 @@ fun AddHabitScreen(
     habitViewModel: HabitViewModel = hiltViewModel(),
     categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
+    val strings = LocalStrings.current
     var habitName by remember { mutableStateOf("") }
     var isDaily by remember { mutableStateOf(true) }
+    var showDayPicker by remember { mutableStateOf(false) }
+
+    // Day codes and their display labels
+    val dayEntries = listOf(
+        "MON" to strings.monday,
+        "TUE" to strings.tuesday,
+        "WED" to strings.wednesday,
+        "THU" to strings.thursday,
+        "FRI" to strings.friday,
+        "SAT" to strings.saturday,
+        "SUN" to strings.sunday
+    )
+    var selectedDays by remember { mutableStateOf(setOf<String>()) }
 
     val categories by categoryViewModel.allCategories.collectAsStateWithLifecycle()
     var selectedCategoryId by remember { mutableIntStateOf(0) }
@@ -49,22 +64,108 @@ fun AddHabitScreen(
         }
     }
 
+    // Day picker dialog
+    if (showDayPicker) {
+        AlertDialog(
+            onDismissRequest = { showDayPicker = false },
+            containerColor = SurfaceContainer,
+            title = {
+                Text(
+                    text = strings.selectDays,
+                    color = OnSurface,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    dayEntries.forEach { (code, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedDays = if (selectedDays.contains(code)) {
+                                        selectedDays - code
+                                    } else {
+                                        selectedDays + code
+                                    }
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Checkbox(
+                                checked = selectedDays.contains(code),
+                                onCheckedChange = { checked ->
+                                    selectedDays = if (checked) {
+                                        selectedDays + code
+                                    } else {
+                                        selectedDays - code
+                                    }
+                                },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = Primary,
+                                    uncheckedColor = OnSurfaceVariant
+                                )
+                            )
+                            Text(
+                                text = label,
+                                color = OnSurface,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showDayPicker = false }) {
+                    Text(text = strings.confirm, color = Primary, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDayPicker = false }) {
+                    Text(text = strings.cancel, color = OnSurfaceVariant)
+                }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = Background,
         topBar = {
             TopAppBar(
-                title = { Text(text = "Add New Habit", color = OnSurface, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold) },
+                title = {
+                    Text(
+                        text = strings.addNewHabit,
+                        color = OnSurface,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Primary)
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = strings.back,
+                            tint = Primary
+                        )
                     }
                 },
                 actions = {
                     Box(
-                        modifier = Modifier.padding(end = 8.dp).size(40.dp).clip(CircleShape).background(SurfaceContainerHigh),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(SurfaceContainerHigh),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(imageVector = Icons.Default.Person, contentDescription = "Profile", tint = OnSurfaceVariant, modifier = Modifier.size(20.dp))
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile",
+                            tint = OnSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Surface.copy(alpha = 0.8f))
@@ -90,13 +191,24 @@ fun AddHabitScreen(
                     .background(Brush.linearGradient(listOf(Primary.copy(alpha = 0.4f), Secondary.copy(alpha = 0.2f))))
             ) {
                 Column(modifier = Modifier.align(Alignment.BottomStart).padding(24.dp)) {
-                    Text(text = "NEW RITUAL", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                    Text(text = "Start Your Flow", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Black)
+                    Text(
+                        text = strings.newRitual,
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
+                    Text(
+                        text = strings.startYourFlow,
+                        color = Color.White,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black
+                    )
                 }
             }
 
             // Habit Name
-            FormSection(label = "What is the habit?") {
+            FormSection(label = strings.whatIsHabit) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -107,7 +219,13 @@ fun AddHabitScreen(
                     TextField(
                         value = habitName,
                         onValueChange = { habitName = it },
-                        placeholder = { Text(text = "e.g. Morning Meditation", color = Outline.copy(alpha = 0.5f), fontSize = 18.sp) },
+                        placeholder = {
+                            Text(
+                                text = strings.habitPlaceholder,
+                                color = Outline.copy(alpha = 0.5f),
+                                fontSize = 18.sp
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -117,22 +235,58 @@ fun AddHabitScreen(
                             focusedTextColor = OnSurface,
                             unfocusedTextColor = OnSurface
                         ),
-                        textStyle = LocalTextStyle.current.copy(fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                        textStyle = LocalTextStyle.current.copy(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
                 }
             }
 
             // Frequency
-            FormSection(label = "Frequency") {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FrequencyButton(label = "Daily", icon = Icons.Default.CalendarToday, isSelected = isDaily, onClick = { isDaily = true }, modifier = Modifier.weight(1f))
-                    FrequencyButton(label = "Weekly", icon = Icons.Default.DateRange, isSelected = !isDaily, onClick = { isDaily = false }, modifier = Modifier.weight(1f))
+            FormSection(label = strings.frequency) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        FrequencyButton(
+                            label = strings.daily,
+                            icon = Icons.Default.CalendarToday,
+                            isSelected = isDaily,
+                            onClick = { isDaily = true },
+                            modifier = Modifier.weight(1f)
+                        )
+                        FrequencyButton(
+                            label = strings.custom,
+                            icon = Icons.Default.DateRange,
+                            isSelected = !isDaily,
+                            onClick = {
+                                isDaily = false
+                                showDayPicker = true
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    // Show selected days preview when custom is active
+                    if (!isDaily && selectedDays.isNotEmpty()) {
+                        val orderedCodes = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
+                        val displayDays = orderedCodes
+                            .filter { selectedDays.contains(it) }
+                            .joinToString(", ") { code ->
+                                dayEntries.first { it.first == code }.second
+                            }
+                        Text(
+                            text = displayDays,
+                            color = Primary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
                 }
             }
 
             // Reminder Time + Category row
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                FormSection(label = "Reminder Time", modifier = Modifier.weight(1f)) {
+                FormSection(label = strings.reminderTime, modifier = Modifier.weight(1f)) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -147,7 +301,7 @@ fun AddHabitScreen(
                         Icon(imageVector = Icons.Default.Schedule, contentDescription = null, tint = Primary)
                     }
                 }
-                FormSection(label = "Category", modifier = Modifier.weight(1f)) {
+                FormSection(label = strings.category, modifier = Modifier.weight(1f)) {
                     CategoryPicker(
                         categories = categories,
                         selectedId = selectedCategoryId,
@@ -157,7 +311,7 @@ fun AddHabitScreen(
             }
 
             // Color Palette
-            FormSection(label = "Accent Color") {
+            FormSection(label = strings.accentColor) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -180,7 +334,7 @@ fun AddHabitScreen(
                                 )
                             }
                     }
-                    Text(text = "Custom", color = Primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(text = strings.custom, color = Primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -195,16 +349,19 @@ fun AddHabitScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Box(
-                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(16.dp)).background(Primary.copy(alpha = 0.2f)),
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Primary.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, tint = Primary)
                 }
                 Column {
-                    Text(text = "Smart Suggestions", color = OnSurface, fontWeight = FontWeight.Bold)
+                    Text(text = strings.smartSuggestions, color = OnSurface, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "We've noticed you're usually active at 8:00 AM. Want to pair this with your 'Coffee' ritual?",
+                        text = strings.smartSuggestionText,
                         color = OnSurfaceVariant,
                         fontSize = 13.sp
                     )
@@ -212,21 +369,36 @@ fun AddHabitScreen(
             }
 
             // Create Button
+            val frequencyString = when {
+                isDaily -> "DAILY"
+                selectedDays.isEmpty() -> "DAILY"
+                else -> {
+                    val orderedCodes = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
+                    orderedCodes.filter { selectedDays.contains(it) }.joinToString(",")
+                }
+            }
+
             Button(
                 onClick = {
                     if (habitName.isNotBlank() && selectedCategoryId != 0) {
                         habitViewModel.insertHabit(
-                            Habit(name = habitName.trim(), categoryId = selectedCategoryId)
+                            Habit(
+                                name = habitName.trim(),
+                                categoryId = selectedCategoryId,
+                                frequency = frequencyString
+                            )
                         )
                         onBack()
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(64.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
                 enabled = habitName.isNotBlank() && selectedCategoryId != 0
             ) {
-                Text(text = "Create Habit", color = OnPrimary, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                Text(text = strings.createHabit, color = OnPrimary, fontSize = 18.sp, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(imageVector = Icons.Default.Bolt, contentDescription = null, tint = OnPrimary)
             }
@@ -284,13 +456,26 @@ private fun CategoryPicker(
 @Composable
 private fun FormSection(label: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = label.uppercase(), color = OnSurfaceVariant, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp, modifier = Modifier.padding(start = 4.dp))
+        Text(
+            text = label.uppercase(),
+            color = OnSurfaceVariant,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp,
+            modifier = Modifier.padding(start = 4.dp)
+        )
         content()
     }
 }
 
 @Composable
-private fun FrequencyButton(label: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun FrequencyButton(
+    label: String,
+    icon: ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
@@ -301,7 +486,12 @@ private fun FrequencyButton(label: String, icon: ImageVector, isSelected: Boolea
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = icon, contentDescription = null, tint = if (isSelected) OnPrimary else OnSurface, modifier = Modifier.size(20.dp))
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = if (isSelected) OnPrimary else OnSurface,
+            modifier = Modifier.size(20.dp)
+        )
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = label, color = if (isSelected) OnPrimary else OnSurface, fontWeight = FontWeight.Bold)
     }

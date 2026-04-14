@@ -23,5 +23,6 @@ data class Habit(
     val description: String = "",
     val categoryId: Int,
     val isCompleted: Boolean = false,
-    val createdAt: Date = Date()
+    val createdAt: Date = Date(),
+    val frequency: String = "DAILY"
 )

@@ -34,12 +34,9 @@ import com.example.taskhabit.presentation.ui.util.habitIconFor
 import com.example.taskhabit.presentation.viewmodel.CategoryViewModel
 import com.example.taskhabit.presentation.viewmodel.HabitViewModel
 import com.example.taskhabit.ui.theme.*
+import com.example.taskhabit.ui.theme.LocalStrings
 
-enum class HabitFilter(val label: String) {
-    ALL("All"),
-    PENDING("Pending"),
-    COMPLETED("Completed")
-}
+enum class HabitFilter { ALL, PENDING, COMPLETED }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,10 +44,13 @@ fun HabitsScreen(
     currentRoute: String = "habits",
     onNavigate: (String) -> Unit = {},
     onAddHabit: () -> Unit = {},
-    onEdit: (Int) -> Unit = {},                       
+    onEdit: (Int) -> Unit = {},
+    onAvatarClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     habitViewModel: HabitViewModel = hiltViewModel(),
     categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
+    val strings = LocalStrings.current
     val habits by habitViewModel.allHabits.collectAsStateWithLifecycle()
     val categories by categoryViewModel.allCategories.collectAsStateWithLifecycle()
     val categoryMap = remember(categories) { categories.associateBy { it.id } }
@@ -70,7 +70,12 @@ fun HabitsScreen(
 
     Scaffold(
         containerColor = Background,
-        topBar = { KineticTopAppBar() },
+        topBar = {
+            KineticTopAppBar(
+                onAvatarClick = onAvatarClick,
+                onSettingsClick = onSettingsClick
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddHabit,
@@ -97,15 +102,20 @@ fun HabitsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 HabitsHeader(
                     total = habits.size,
-                    completed = habits.count { it.isCompleted }
+                    completed = habits.count { it.isCompleted },
+                    strings = strings
                 )
                 Spacer(modifier = Modifier.height(20.dp))
-                FilterTabBar(selected = selectedFilter, onFilterChange = { selectedFilter = it })
+                FilterTabBar(
+                    selected = selectedFilter,
+                    onFilterChange = { selectedFilter = it },
+                    strings = strings
+                )
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
             if (filteredHabits.isEmpty()) {
-                item { EmptyState(filter = selectedFilter) }
+                item { EmptyState(filter = selectedFilter, strings = strings) }
             } else {
                 items(filteredHabits, key = { it.id }) { habit ->
                     val categoryName = categoryMap[habit.categoryId]?.name ?: "Other"
@@ -127,15 +137,30 @@ fun HabitsScreen(
 }
 
 @Composable
-private fun HabitsHeader(total: Int, completed: Int) {
+private fun HabitsHeader(
+    total: Int,
+    completed: Int,
+    strings: com.example.taskhabit.ui.theme.AppStrings
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Bottom
     ) {
         Column {
-            Text(text = "My Habits", color = OnSurface, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.5).sp)
-            Text(text = "$completed of $total completed today", color = OnSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Text(
+                text = strings.myHabits,
+                color = OnSurface,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.5).sp
+            )
+            Text(
+                text = "$completed of $total ${strings.completedTodayOf}",
+                color = OnSurfaceVariant,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
         Box(
             modifier = Modifier
@@ -150,7 +175,17 @@ private fun HabitsHeader(total: Int, completed: Int) {
 }
 
 @Composable
-private fun FilterTabBar(selected: HabitFilter, onFilterChange: (HabitFilter) -> Unit) {
+private fun FilterTabBar(
+    selected: HabitFilter,
+    onFilterChange: (HabitFilter) -> Unit,
+    strings: com.example.taskhabit.ui.theme.AppStrings
+) {
+    val filterLabels = mapOf(
+        HabitFilter.ALL to strings.filterAll,
+        HabitFilter.PENDING to strings.filterPending,
+        HabitFilter.COMPLETED to strings.filterCompleted
+    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -180,7 +215,12 @@ private fun FilterTabBar(selected: HabitFilter, onFilterChange: (HabitFilter) ->
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = filter.label, color = textColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = filterLabels[filter] ?: filter.name,
+                    color = textColor,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -192,7 +232,7 @@ private fun HabitCard(
     categoryName: String,
     accentColor: Color,
     onToggle: () -> Unit,
-    onEdit: () -> Unit                                 
+    onEdit: () -> Unit
 ) {
     val cardBg = if (habit.isCompleted) accentColor.copy(alpha = 0.08f) else SurfaceContainerLow
     val icon = habitIconFor(habit.name)
@@ -205,7 +245,11 @@ private fun HabitCard(
             .then(
                 if (!habit.isCompleted)
                     Modifier.drawBehind {
-                        drawRect(color = accentColor.copy(alpha = 0.5f), topLeft = Offset.Zero, size = Size(4.dp.toPx(), size.height))
+                        drawRect(
+                            color = accentColor.copy(alpha = 0.5f),
+                            topLeft = Offset.Zero,
+                            size = Size(4.dp.toPx(), size.height)
+                        )
                     }
                 else Modifier
             )
@@ -226,7 +270,12 @@ private fun HabitCard(
                     .background(if (habit.isCompleted) accentColor else SurfaceContainerHigh),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(imageVector = icon, contentDescription = null, tint = if (habit.isCompleted) OnPrimary else accentColor, modifier = Modifier.size(26.dp))
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (habit.isCompleted) OnPrimary else accentColor,
+                    modifier = Modifier.size(26.dp)
+                )
             }
             Column {
                 Text(
@@ -246,7 +295,6 @@ private fun HabitCard(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Botão editar                             
             IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
                 Icon(
                     imageVector = Icons.Default.Edit,
@@ -256,37 +304,59 @@ private fun HabitCard(
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
-            // Check circle
             Box(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .then(if (habit.isCompleted) Modifier.background(accentColor) else Modifier.border(2.dp, OutlineVariant, CircleShape)),
+                    .then(
+                        if (habit.isCompleted) Modifier.background(accentColor)
+                        else Modifier.border(2.dp, OutlineVariant, CircleShape)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 if (habit.isCompleted) {
-                    Icon(imageVector = Icons.Default.Check, contentDescription = "Completed", tint = Color.White, modifier = Modifier.size(18.dp))
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Completed",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
         }
     }
 }
 
-
 @Composable
-private fun EmptyState(filter: HabitFilter) {
+private fun EmptyState(
+    filter: HabitFilter,
+    strings: com.example.taskhabit.ui.theme.AppStrings
+) {
     val message = when (filter) {
-        HabitFilter.PENDING   -> "No pending habits.\nGreat job today!"
-        HabitFilter.COMPLETED -> "No completed habits yet.\nKeep going!"
-        HabitFilter.ALL       -> "No habits yet.\nCreate your first ritual!"
+        HabitFilter.PENDING   -> strings.noPendingHabits
+        HabitFilter.COMPLETED -> strings.noCompletedHabits
+        HabitFilter.ALL       -> strings.noHabitsYet
     }
     Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = Primary.copy(alpha = 0.3f), modifier = Modifier.size(64.dp))
-        Text(text = message, color = OnSurfaceVariant, fontSize = 15.sp, fontWeight = FontWeight.Medium, lineHeight = 22.sp)
+        Icon(
+            imageVector = Icons.Default.CheckCircle,
+            contentDescription = null,
+            tint = Primary.copy(alpha = 0.3f),
+            modifier = Modifier.size(64.dp)
+        )
+        Text(
+            text = message,
+            color = OnSurfaceVariant,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            lineHeight = 22.sp
+        )
     }
 }
 

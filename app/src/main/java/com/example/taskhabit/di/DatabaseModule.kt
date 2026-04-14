@@ -6,6 +6,9 @@ import com.example.taskhabit.data.local.dao.HabitCompletionDao
 import com.example.taskhabit.data.local.dao.HabitDao
 import com.example.taskhabit.data.local.dao.StreakDao
 import com.example.taskhabit.data.local.database.HabitDatabase
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.example.taskhabit.data.preferences.UserPreferencesRepository
 import com.example.taskhabit.data.repository.CategoryRepository
 import com.example.taskhabit.data.repository.HabitCompletionRepository
 import com.example.taskhabit.data.repository.HabitRepository
@@ -58,9 +61,14 @@ object DatabaseModule {
     fun provideHabitCompletionRepository(dao: HabitCompletionDao): HabitCompletionRepository =
         HabitCompletionRepository(dao)
 
-    @Provides 
+    @Provides
     @Singleton
     fun provideStreakRepository(dao: StreakDao): StreakRepository =
         StreakRepository(dao)
+
+    @Provides
+    @Singleton
+    fun provideUserPreferencesRepository(dataStore: DataStore<Preferences>): UserPreferencesRepository =
+        UserPreferencesRepository(dataStore)
 
 }
