@@ -31,11 +31,13 @@ import com.example.taskhabit.ui.theme.*
 @Composable
 fun BadgesScreen(
     currentRoute: String = "badges",
-    onNavigate: (String) -> Unit = {}
+    onNavigate: (String) -> Unit = {},
+    onAvatarClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = Background,
-        topBar = { KineticTopAppBar() },
+        topBar = { KineticTopAppBar(onAvatarClick = onAvatarClick, onSettingsClick = onSettingsClick) },
         bottomBar = { HabitBottomNavBar(currentRoute = currentRoute, onNavigate = onNavigate) }
     ) { innerPadding ->
         LazyColumn(

@@ -34,6 +34,8 @@ import com.example.taskhabit.ui.theme.*
 fun StatsScreen(
     currentRoute: String = "stats",
     onNavigate: (String) -> Unit = {},
+    onAvatarClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     viewModel: HabitViewModel = hiltViewModel()
 ) {
     val habits by viewModel.allHabits.collectAsStateWithLifecycle()
@@ -42,7 +44,7 @@ fun StatsScreen(
 
     Scaffold(
         containerColor = Background,
-        topBar = { KineticTopAppBar() },
+        topBar = { KineticTopAppBar(onAvatarClick = onAvatarClick, onSettingsClick = onSettingsClick) },
         bottomBar = { HabitBottomNavBar(currentRoute = currentRoute, onNavigate = onNavigate) }
     ) { innerPadding ->
         LazyColumn(
