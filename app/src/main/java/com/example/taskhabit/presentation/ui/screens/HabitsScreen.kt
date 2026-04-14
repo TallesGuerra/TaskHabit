@@ -255,7 +255,6 @@ private fun HabitCard(
                     modifier = Modifier.size(18.dp)
                 )
             }
-            }
             Spacer(modifier = Modifier.width(4.dp))
             // Check circle
             Box(

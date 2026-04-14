@@ -7,7 +7,9 @@ import com.example.taskhabit.data.local.dao.HabitDao
 import com.example.taskhabit.data.local.dao.StreakDao
 import com.example.taskhabit.data.local.database.HabitDatabase
 import com.example.taskhabit.data.repository.CategoryRepository
+import com.example.taskhabit.data.repository.HabitCompletionRepository
 import com.example.taskhabit.data.repository.HabitRepository
+import com.example.taskhabit.data.repository.StreakRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
