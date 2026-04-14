@@ -31,7 +31,7 @@ interface HabitDao {
     fun getCompletedHabits(): Flow<List<Habit>>
 
     @Query("UPDATE habits SET isCompleted = 0")
-    suspend fun resetAllHabits()
+    suspend fun resetAllHabits(): Int
 
 
 }
