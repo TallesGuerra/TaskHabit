@@ -9,6 +9,18 @@
 
 ---
 
+## ⬇️ Download
+
+<p align="center">
+  <a href="https://github.com/TallesGuerra/TaskHabit/releases/tag/v1.0.0">
+    <img src="https://img.shields.io/badge/Download%20APK-v1.0.0-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"/>
+  </a>
+</p>
+
+> **Android 7.0+** (API 24) required. Enable *"Install from unknown sources"* when prompted.
+
+---
+
 ## 📸 Screenshots
 
 <p align="center">
