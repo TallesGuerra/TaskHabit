@@ -13,7 +13,7 @@ class HabitCompletionRepository @Inject constructor(
         dao.getCompletionsByHabit(habitId)
 
     suspend fun recordCompletion(habitId: Int) {
-      dao.insertCompletion(HabitCompletion(habitId = habitId, completeAt = Date()))      
+      dao.insertCompletion(HabitCompletion(habitId = habitId, completedAt = Date()))      
 
     }   
 
