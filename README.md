@@ -24,11 +24,7 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="docs/screenshot_today.png" alt="Today Screen" width="250"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="docs/screenshot_habits.png" alt="Habits Screen" width="250"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="docs/screenshot_stats.png" alt="Stats Screen" width="250"/>
+  <img src="docs/mockup_today.svg" alt="Today Screen" width="200"/>
 </p>
 
 ---

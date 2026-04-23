@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 180 390" width="180" height="390">
+  <defs>
+    <clipPath id="screenClip">
+      <rect x="10" y="10" width="180" height="390" rx="20"/>
+    </clipPath>
+    <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#BB86FC"/>
+      <stop offset="100%" stop-color="#9C5FD6"/>
+    </linearGradient>
+    <linearGradient id="topFade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A1726"/>
+      <stop offset="100%" stop-color="#121218"/>
+    </linearGradient>
+  </defs>
+
+  <g clip-path="url(#screenClip)">
+
+    <!-- Screen background -->
+    <rect x="10" y="10" width="180" height="390" fill="#121218"/>
+
+    <!-- Top bar gradient -->
+    <rect x="10" y="10" width="180" height="48" fill="url(#topFade)"/>
+
+    <!-- Dynamic Island -->
+    <rect x="74" y="15" width="52" height="12" rx="6" fill="#111118"/>
+
+    <!-- Status bar: 9:41 -->
+    <text x="20" y="34" font-family="sans-serif" font-size="9" font-weight="700" fill="white">9:41</text>
+
+    <!-- Signal bars -->
+    <rect x="152" y="28" width="2.5" height="5" rx="0.5" fill="white"/>
+    <rect x="156" y="26" width="2.5" height="7" rx="0.5" fill="white"/>
+    <rect x="160" y="24" width="2.5" height="9" rx="0.5" fill="rgba(255,255,255,0.35)"/>
+
+    <!-- Battery -->
+    <rect x="165" y="26" width="12" height="7" rx="1.2" fill="none" stroke="white" stroke-width="0.9"/>
+    <rect x="177" y="28.5" width="1.5" height="2" rx="0.4" fill="white"/>
+    <rect x="166" y="27" width="8" height="5" rx="0.6" fill="white"/>
+
+    <!-- Date -->
+    <text x="16" y="55" font-family="sans-serif" font-size="8.5" fill="rgba(255,255,255,0.45)">Quinta, 23 Abr</text>
+
+    <!-- Greeting -->
+    <text x="16" y="70" font-family="sans-serif" font-size="13.5" font-weight="700" fill="white">Bom dia, Talles 👋</text>
+
+    <!-- Progress label -->
+    <text x="16" y="85" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,0.45)">3 de 5 concluídos</text>
+
+    <!-- Progress bar track -->
+    <rect x="16" y="89" width="168" height="5" rx="2.5" fill="#2A2535"/>
+    <!-- Progress fill: 3/5 = 60% -->
+    <rect x="16" y="89" width="101" height="5" rx="2.5" fill="url(#progressGrad)"/>
+
+    <!-- HOJE label -->
+    <text x="16" y="107" font-family="sans-serif" font-size="7.5" font-weight="700" fill="rgba(255,255,255,0.35)" letter-spacing="1.2">HOJE</text>
+
+    <!-- Card 1: Meditar 10 min | verde | concluído -->
+    <rect x="16" y="112" width="168" height="37" rx="8" fill="#1E1B2E"/>
+    <rect x="16" y="114" width="3" height="33" rx="1.5" fill="#81C784"/>
+    <text x="26" y="126" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,0.35)" text-decoration="line-through">Meditar 10 min</text>
+    <text x="26" y="140" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,0.32)">🔥 12 dias</text>
+    <circle cx="174" cy="130.5" r="8" fill="#81C784"/>
+    <text x="174" y="130.5" font-family="sans-serif" font-size="10" font-weight="700" fill="white" text-anchor="middle" dominant-baseline="middle">✓</text>
+
+    <!-- Card 2: Estudar Kotlin | azul | concluído -->
+    <rect x="16" y="154" width="168" height="37" rx="8" fill="#1E1B2E"/>
+    <rect x="16" y="156" width="3" height="33" rx="1.5" fill="#64B5F6"/>
+    <text x="26" y="168" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,0.35)" text-decoration="line-through">Estudar Kotlin</text>
+    <text x="26" y="182" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,0.32)">🔥 7 dias</text>
+    <circle cx="174" cy="172.5" r="8" fill="#64B5F6"/>
+    <text x="174" y="172.5" font-family="sans-serif" font-size="10" font-weight="700" fill="white" text-anchor="middle" dominant-baseline="middle">✓</text>
+
+    <!-- Card 3: Exercício 30 min | laranja | concluído -->
+    <rect x="16" y="196" width="168" height="37" rx="8" fill="#1E1B2E"/>
+    <rect x="16" y="198" width="3" height="33" rx="1.5" fill="#FFB74D"/>
+    <text x="26" y="210" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,0.35)" text-decoration="line-through">Exercício 30 min</text>
+    <text x="26" y="224" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,0.32)">🔥 4 dias</text>
+    <circle cx="174" cy="214.5" r="8" fill="#FFB74D"/>
+    <text x="174" y="214.5" font-family="sans-serif" font-size="10" font-weight="700" fill="white" text-anchor="middle" dominant-baseline="middle">✓</text>
+
+    <!-- Card 4: Leitura 20 min | roxo | pendente -->
+    <rect x="16" y="238" width="168" height="37" rx="8" fill="#1E1B2E"/>
+    <rect x="16" y="240" width="3" height="33" rx="1.5" fill="#BB86FC"/>
+    <text x="26" y="252" font-family="sans-serif" font-size="10" fill="white">Leitura 20 min</text>
+    <text x="26" y="266" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,0.45)">🔥 2 dias</text>
+    <circle cx="174" cy="256.5" r="8" fill="none" stroke="#BB86FC" stroke-width="1.8"/>
+
+    <!-- Card 5: Beber 2L de água | teal | pendente -->
+    <rect x="16" y="280" width="168" height="37" rx="8" fill="#1E1B2E"/>
+    <rect x="16" y="282" width="3" height="33" rx="1.5" fill="#4DD0E1"/>
+    <text x="26" y="294" font-family="sans-serif" font-size="10" fill="white">Beber 2L de água</text>
+    <text x="26" y="308" font-family="sans-serif" font-size="8" fill="rgba(255,255,255,0.45)">🔥 1 dia</text>
+    <circle cx="174" cy="298.5" r="8" fill="none" stroke="#4DD0E1" stroke-width="1.8"/>
+
+    <!-- Bottom nav -->
+    <rect x="10" y="329" width="180" height="71" fill="#17141F"/>
+    <rect x="10" y="329" width="180" height="0.5" fill="rgba(255,255,255,0.08)"/>
+
+    <!-- Nav 1: Hoje (active) -->
+    <rect x="17" y="337" width="36" height="28" rx="14" fill="rgba(187,134,252,0.18)"/>
+    <text x="35" y="350" font-family="sans-serif" font-size="13" text-anchor="middle">🏠</text>
+    <text x="35" y="361" font-family="sans-serif" font-size="6.5" font-weight="700" fill="#BB86FC" text-anchor="middle" letter-spacing="0.4">HOJE</text>
+
+    <!-- Nav 2: Hábitos -->
+    <text x="78" y="350" font-family="sans-serif" font-size="13" text-anchor="middle">📋</text>
+    <text x="78" y="361" font-family="sans-serif" font-size="6.5" fill="rgba(255,255,255,0.38)" text-anchor="middle" letter-spacing="0.4">HÁBITOS</text>
+
+    <!-- Nav 3: Stats -->
+    <text x="121" y="350" font-family="sans-serif" font-size="13" text-anchor="middle">📊</text>
+    <text x="121" y="361" font-family="sans-serif" font-size="6.5" fill="rgba(255,255,255,0.38)" text-anchor="middle" letter-spacing="0.4">STATS</text>
+
+    <!-- Nav 4: Perfil -->
+    <text x="164" y="350" font-family="sans-serif" font-size="13" text-anchor="middle">👤</text>
+    <text x="164" y="361" font-family="sans-serif" font-size="6.5" fill="rgba(255,255,255,0.38)" text-anchor="middle" letter-spacing="0.4">PERFIL</text>
+
+    <!-- Home bar -->
+    <rect x="76" y="393" width="48" height="3" rx="1.5" fill="rgba(255,255,255,0.18)"/>
+
+  </g>
+</svg>
